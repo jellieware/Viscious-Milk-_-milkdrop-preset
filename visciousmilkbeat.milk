@@ -1,0 +1,243 @@
+MILKDROP_PRESET_VERSION=201
+PSVERSION=3
+PSVERSION_WARP=2
+PSVERSION_COMP=3
+
+[preset00]
+fRating=5.000000
+fGammaAdj=1.000000
+fDecay=1.000000
+fVideoEchoZoom=1.000000
+fVideoEchoAlpha=0.000000
+nVideoEchoOrientation=0
+nWaveMode=0
+bAdditiveWaves=0
+bWaveDots=0
+bWaveThick=0
+bModWaveAlphaByVolume=0
+bMaximizeWaveColor=0
+bTexWrap=1
+bDarkenCenter=0
+bRedBlueStereo=0
+bBrighten=0
+bDarken=0
+bSolarize=0
+bInvert=0
+
+fWaveAlpha=0.000000
+fWaveScale=0.000000
+fWaveSmoothing=0.000000
+fWaveParam=0.000000
+fModWaveAlphaStart=0.000000
+fModWaveAlphaEnd=0.000000
+fWarpAnimSpeed=0.000000
+fWarpScale=0.000000
+fZoomExponent=1.000000
+
+fShader=1.000000
+
+zoom=1.000000
+rot=0.000000
+cx=0.500000
+cy=0.500000
+dx=0.000000
+dy=0.000000
+warp=0.000000
+sx=1.000000
+sy=1.000000
+
+wave_r=0.000000
+wave_g=0.000000
+wave_b=0.000000
+wave_x=0.500000
+wave_y=0.500000
+
+ob_size=0.000000
+ob_r=0.000000
+ob_g=0.000000
+ob_b=0.000000
+ob_a=0.000000
+
+ib_size=0.000000
+ib_r=0.000000
+ib_g=0.000000
+ib_b=0.000000
+ib_a=0.000000
+
+nMotionVectorsX=0
+nMotionVectorsY=0
+mv_dx=0.000000
+mv_dy=0.000000
+mv_l=0.000000
+mv_r=0.000000
+mv_g=0.000000
+mv_b=0.000000
+mv_a=0.000000
+
+per_frame_init_1=q1=time;
+
+// Audio-reactive timing only: preserves the original visual equations.
+// bass_att makes the existing animation pulse with the music while
+// retaining the preset's original time-based motion.
+per_frame_1=q1=time+bass_att*0.30;
+
+warp_1=`shader_body
+warp_2=`{
+warp_3=`    ret=tex2D(sampler_main,uv).xyz;
+warp_4=`}
+
+comp_1=`shader_body
+comp_2=`{
+comp_3=`    float2 p;
+comp_4=`    float3 c;
+comp_5=`    float3 c0;
+comp_6=`    float w0;
+comp_7=`    float wt;
+comp_8=`    float wp;
+comp_9=`    float wb;
+comp_10=`   float w;
+comp_11=`   float a;
+comp_12=`   float s;
+comp_13=`   float co;
+comp_14=`
+comp_15=`   /*
+comp_16=`      Original GLSL:
+comp_17=`
+comp_18=`          uv /= resolution.xx;
+comp_19=`
+comp_20=`      MilkDrop uv is normalized [0,1]. Since the original
+comp_21=`      divides BOTH coordinates by horizontal resolution,
+comp_22=`      reconstruct the same coordinate system by scaling Y
+comp_23=`      by height/width.
+comp_24=`   */
+comp_25=`
+comp_26=`   p.x=uv.x;
+comp_27=`   p.y=uv.y*texsize.y*texsize.z;
+comp_28=`
+comp_29=`   p=float2(0.125,0.75)
+comp_30=`     +(p-float2(0.125,0.75))*0.03;
+comp_31=`
+comp_32=`   /*
+comp_33=`      Original:
+comp_34=`
+comp_35=`          float T=iTime*.25 + time;
+comp_36=`
+comp_37=`      MilkDrop has one playback clock. q1 stores that same
+comp_38=`      clock, so both original clocks are mapped to it.
+comp_39=`   */
+comp_40=`
+comp_41=`   float T=time*0.25+q1;
+comp_42=`
+comp_43=`   c.x=clamp(
+comp_44=`       1.0-0.7*length(p-float2(0.1,0.0)),
+comp_45=`       0.0,1.0)*2.0-1.0;
+comp_46=`
+comp_47=`   c.y=clamp(
+comp_48=`       1.0-0.7*length(p-float2(0.9,0.0)),
+comp_49=`       0.0,1.0)*2.0-1.0;
+comp_50=`
+comp_51=`   c.z=clamp(
+comp_52=`       1.0-0.7*length(p-float2(0.5,1.0)),
+comp_53=`       0.0,1.0)*2.0-1.0;
+comp_54=`
+comp_55=`   c0=float3(0.0,0.0,0.0);
+comp_56=`   w0=0.0;
+comp_57=`
+comp_58=`   /*
+comp_59=`      The GLSL rotation:
+comp_60=`
+comp_61=`          p * mat2(s,c,c,-s)
+comp_62=`
+comp_63=`      becomes:
+comp_64=`
+comp_65=`          x' = x*s + y*c
+comp_66=`          y' = x*c - y*s
+comp_67=`
+comp_68=`      The unusual matrix is intentionally preserved.
+comp_69=`   */
+comp_70=`
+comp_71=`   /* i = 0 */
+comp_72=`   wt=-0.060000;
+comp_73=`   wp=0.501500;
+comp_74=`   wb=0.050000;
+comp_75=`
+comp_76=`   a=1.6+T*0.65*wt+(p.x+0.7)*23.0*wp;
+comp_77=`   s=sin(a*15.83);
+comp_78=`   co=cos(a*15.83);
+comp_79=`   c.xz=float2(c.x*s+c.z*co,c.x*co-c.z*s);
+comp_80=`
+comp_81=`   a=c.z*c.x*wb+1.7+T*wt+(p.y+1.1)*15.0*wp;
+comp_82=`   s=sin(a*15.83);
+comp_83=`   co=cos(a*15.83);
+comp_84=`   c.xy=float2(c.x*s+c.y*co,c.x*co-c.y*s);
+comp_85=`
+comp_86=`   a=c.x*c.y*wb+2.4-T*0.79*wt
+comp_87=`    +(p.x+p.y*(frac(0.0/2.0)-0.25)*4.0)*17.0*wp;
+comp_88=`   s=sin(a*15.83);
+comp_89=`   co=cos(a*15.83);
+comp_90=`   c.yz=float2(c.y*s+c.z*co,c.y*co-c.z*s);
+comp_91=`
+comp_92=`   a=c.y*c.z*wb+1.6-T*0.65*wt+(p.x+0.7)*23.0*wp;
+comp_93=`   s=sin(a*15.83);
+comp_94=`   co=cos(a*15.83);
+comp_95=`   c.xz=float2(c.x*s+c.z*co,c.x*co-c.z*s);
+comp_96=`
+comp_97=`   a=c.z*c.x*wb+1.7-T*wt+(p.y+1.1)*15.0*wp;
+comp_98=`   s=sin(a*15.83);
+comp_99=`   co=cos(a*15.83);
+comp_100=`  c.xy=float2(c.x*s+c.y*co,c.x*co-c.y*s);
+comp_101=`
+comp_102=`  w=1.5;
+comp_103=`  c0+=c*w;
+comp_104=`  w0+=w;
+comp_105=`
+comp_106=`  /* i = 1..15 */
+comp_107=`  for(int i=1;i<16;i++)
+comp_108=`  {
+comp_109=`      wt=(float(i*i)/256.0-0.2)*0.3;
+comp_110=`      wp=0.5+(float(i)+1.0)*(float(i)+1.5)*0.001;
+comp_111=`      wb=0.05+float(i)/16.0*0.1;
+comp_112=`
+comp_113=`      a=1.6+T*0.65*wt+(p.x+0.7)*23.0*wp;
+comp_114=`      s=sin(a*15.83);
+comp_115=`      co=cos(a*15.83);
+comp_116=`      c.xz=float2(c.x*s+c.z*co,c.x*co-c.z*s);
+comp_117=`
+comp_118=`      a=c.z*c.x*wb+1.7+T*wt+(p.y+1.1)*15.0*wp;
+comp_119=`      s=sin(a*15.83);
+comp_120=`      co=cos(a*15.83);
+comp_121=`      c.xy=float2(c.x*s+c.y*co,c.x*co-c.y*s);
+comp_122=`
+comp_123=`      a=c.x*c.y*wb+2.4-T*0.79*wt
+comp_124=`       +(p.x+p.y*(frac(float(i)/2.0)-0.25)*4.0)*17.0*wp;
+comp_125=`      s=sin(a*15.83);
+comp_126=`      co=cos(a*15.83);
+comp_127=`      c.yz=float2(c.y*s+c.z*co,c.y*co-c.z*s);
+comp_128=`
+comp_129=`      a=c.y*c.z*wb+1.6-T*0.65*wt+(p.x+0.7)*23.0*wp;
+comp_130=`      s=sin(a*15.83);
+comp_131=`      co=cos(a*15.83);
+comp_132=`      c.xz=float2(c.x*s+c.z*co,c.x*co-c.z*s);
+comp_133=`
+comp_134=`      a=c.z*c.x*wb+1.7-T*wt+(p.y+1.1)*15.0*wp;
+comp_135=`      s=sin(a*15.83);
+comp_136=`      co=cos(a*15.83);
+comp_137=`      c.xy=float2(c.x*s+c.y*co,c.x*co-c.y*s);
+comp_138=`
+comp_139=`      w=1.5-float(i)/16.0;
+comp_140=`      c0+=c*w;
+comp_141=`      w0+=w;
+comp_142=`  }
+comp_143=`
+comp_144=`  c0=c0/w0*2.0+0.5;
+comp_145=`
+comp_146=`  c0*=0.5+
+comp_147=`      dot(c0,float3(1.0,1.0,1.0))/sqrt(3.0)*0.5;
+comp_148=`
+comp_149=`  c0+=pow(
+comp_150=`      length(sin(c0*3.141592654*4.0))/sqrt(3.0),
+comp_151=`      20.0
+comp_152=`  )*(0.3+0.7*c0);
+comp_153=`
+comp_154=`  ret=c0;
+comp_155=`}
